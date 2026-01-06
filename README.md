@@ -1,68 +1,16 @@
-# Mansa Infotech Chatbot
+# React + Vite
 
-A full-stack AI chatbot for Mansa Infotech using Python (FastAPI) and React (Vite).
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Features
-- **AI Chat**: Answers questions about Mansa Infotech using Google Gemini API.
-- **Voice Support**: Supports voice-to-text input (Web Speech API).
-- **Knowledge Base**: Restricted to Mansa Infotech content.
-- **Modern UI**: Clean, responsive chat interface.
+Currently, two official plugins are available:
 
-## Prerequisites
-- Node.js & npm
-- Python 3.8+
-- Google Gemini API Key
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Setup
+## React Compiler
 
-### Backend
-1. Navigate to `backend` folder:
-   ```sh
-   cd backend
-   ```
-2. Create virtual environment (optional but recommended):
-   ```sh
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-3. Install dependencies:
-   ```sh
-   pip install -r requirements.txt
-   ```
-4. Configure Environment:
-   - Rename `.env.example` (or just `.env` if created) to `.env`.
-   - Add your `GEMINI_API_KEY` in `.env`.
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-5. Run Server:
-   ```sh
-   uvicorn app.main:app --reload
-   ```
-   Server runs at `http://localhost:8000`.
+## Expanding the ESLint configuration
 
-### Frontend
-1. Navigate to `frontend` folder:
-   ```sh
-   cd frontend
-   ```
-2. Install dependencies:
-   ```sh
-   npm install
-   ```
-3. Run Development Server:
-   ```sh
-   npm run dev
-   ```
-   App runs at `http://localhost:5173`.
-
-## Architecture
-- **Frontend**: React + Vite
-- **Backend**: FastAPI
-- **LLM**: Google Gemini Pro
-- **Voice**: Web Speech API (Frontend) -> Text -> Backend
-
-## Folder Structure
-- `frontend/`: React application
-- `backend/`: FastAPI application
-  - `app/services`: Logic for Gemini and storage.
-  - `app/routes`: API endpoints.
-  - `app/data`: Knowledge base text file.
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
