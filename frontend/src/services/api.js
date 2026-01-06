@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://localhost:8000/api';
+// In production (same-domain deployment), use relative path. In dev, use localhost.
+const API_BASE_URL = import.meta.env.PROD ? '/api' : 'http://localhost:8000/api';
 
 export const sendMessage = async (message) => {
   try {
