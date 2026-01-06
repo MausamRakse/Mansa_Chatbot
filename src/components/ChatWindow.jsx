@@ -4,7 +4,7 @@ import VoiceInput from './VoiceInput';
 import { sendMessage, sendVoiceText } from '../services/api';
 
 const ChatWindow = () => {
-    // Steps: 0: Name, 1: Contact, 2: Email, 3: Query, 4: Active Chat
+    // Steps: 0: Name, 1: Email, 2: Query, 3: Active Chat
     const [step, setStep] = useState(0);
     const [userDetails, setUserDetails] = useState({
         name: '',
@@ -13,7 +13,7 @@ const ChatWindow = () => {
     });
 
     const [messages, setMessages] = useState([
-        { text: "Hello! May I know your name?", sender: 'bot' }
+        { text: "Welcome to Mansa Infotech! May I know your name?", sender: 'bot' }
     ]);
     const [inputText, setInputText] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +32,7 @@ const ChatWindow = () => {
         setMessages(prev => [...prev, userMessage]);
         setIsLoading(true);
 
-        if (step < 3) {
+        if (step < 2) {
             // Collecting User Details
             let nextMessage = "";
             let nextStep = step + 1;
@@ -43,20 +43,16 @@ const ChatWindow = () => {
                 setUserDetails(prev => ({ ...prev, name: text }));
                 nextMessage = `Nice to meet you, ${text}. Could you please share your email address?`;
             } else if (step === 1) {
-                // Email Verification -> Contact
+                // Email Verification -> Query
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (emailRegex.test(text)) {
                     setUserDetails(prev => ({ ...prev, email: text }));
-                    nextMessage = "Thanks. And your contact number?";
+                    nextMessage = "Great! How can I help you regarding Mansa Infotech today?";
                 } else {
                     nextMessage = "That doesn't look like a valid email. Please try again.";
                     isValid = false;
                     nextStep = step; // Stay on same step
                 }
-            } else if (step === 2) {
-                // Contact -> Query
-                setUserDetails(prev => ({ ...prev, contact: text }));
-                nextMessage = "Great! How can I help you regarding Mansa Infotech today?";
             }
 
             setTimeout(() => {
@@ -67,15 +63,15 @@ const ChatWindow = () => {
                 setIsLoading(false);
             }, 600); // Small delay for natural feel
 
-        } else if (step === 3) {
+        } else if (step === 2) {
             // Sending the Initial Query with Context
-            const contextPayload = `User Context:\n- Name: ${userDetails.name}\n- Email: ${userDetails.email}\n- Contact: ${userDetails.contact}\n\nUser Question: ${text}`;
+            const contextPayload = `User Context:\n- Name: ${userDetails.name}\n- Email: ${userDetails.email}\n- Contact: Not Provided\n\nUser Question: ${text}`;
 
             try {
                 const data = await sendMessage(contextPayload);
                 const botMessage = { text: data.reply, sender: 'bot' };
                 setMessages(prev => [...prev, botMessage]);
-                setStep(4); // Move to active chat mode
+                setStep(3); // Move to active chat mode
             } catch (error) {
                 const errorMessage = { text: "Sorry, something went wrong.", sender: 'bot' };
                 setMessages(prev => [...prev, errorMessage]);
