@@ -4,8 +4,16 @@ import VoiceInput from './VoiceInput';
 import { sendMessage, sendVoiceText } from '../services/api';
 
 const ChatWindow = () => {
+    // Steps: 0: Name, 1: Contact, 2: Email, 3: Query, 4: Active Chat
+    const [step, setStep] = useState(0);
+    const [userDetails, setUserDetails] = useState({
+        name: '',
+        contact: '',
+        email: ''
+    });
+
     const [messages, setMessages] = useState([
-        { text: "Hello! How can I help you with Mansa Infotech today?", sender: 'bot' }
+        { text: "Hello! May I know your name?", sender: 'bot' }
     ]);
     const [inputText, setInputText] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -19,41 +27,86 @@ const ChatWindow = () => {
         scrollToBottom();
     }, [messages]);
 
-    const handleSend = async () => {
-        if (!inputText.trim()) return;
-
-        const userMessage = { text: inputText, sender: 'user' };
+    const processInput = async (text) => {
+        const userMessage = { text, sender: 'user' };
         setMessages(prev => [...prev, userMessage]);
-        setInputText("");
         setIsLoading(true);
 
-        try {
-            const data = await sendMessage(userMessage.text);
-            const botMessage = { text: data.reply, sender: 'bot' };
-            setMessages(prev => [...prev, botMessage]);
-        } catch (error) {
-            const errorMessage = { text: "Sorry, something went wrong.", sender: 'bot' };
-            setMessages(prev => [...prev, errorMessage]);
-        } finally {
-            setIsLoading(false);
+        if (step < 3) {
+            // Collecting User Details
+            let nextMessage = "";
+            let nextStep = step + 1;
+            let isValid = true;
+
+            if (step === 0) {
+                // Name -> Email
+                setUserDetails(prev => ({ ...prev, name: text }));
+                nextMessage = `Nice to meet you, ${text}. Could you please share your email address?`;
+            } else if (step === 1) {
+                // Email Verification -> Contact
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (emailRegex.test(text)) {
+                    setUserDetails(prev => ({ ...prev, email: text }));
+                    nextMessage = "Thanks. And your contact number?";
+                } else {
+                    nextMessage = "That doesn't look like a valid email. Please try again.";
+                    isValid = false;
+                    nextStep = step; // Stay on same step
+                }
+            } else if (step === 2) {
+                // Contact -> Query
+                setUserDetails(prev => ({ ...prev, contact: text }));
+                nextMessage = "Great! How can I help you regarding Mansa Infotech today?";
+            }
+
+            setTimeout(() => {
+                setMessages(prev => [...prev, { text: nextMessage, sender: 'bot' }]);
+                if (isValid) {
+                    setStep(nextStep);
+                }
+                setIsLoading(false);
+            }, 600); // Small delay for natural feel
+
+        } else if (step === 3) {
+            // Sending the Initial Query with Context
+            const contextPayload = `User Context:\n- Name: ${userDetails.name}\n- Email: ${userDetails.email}\n- Contact: ${userDetails.contact}\n\nUser Question: ${text}`;
+
+            try {
+                const data = await sendMessage(contextPayload);
+                const botMessage = { text: data.reply, sender: 'bot' };
+                setMessages(prev => [...prev, botMessage]);
+                setStep(4); // Move to active chat mode
+            } catch (error) {
+                const errorMessage = { text: "Sorry, something went wrong.", sender: 'bot' };
+                setMessages(prev => [...prev, errorMessage]);
+            } finally {
+                setIsLoading(false);
+            }
+
+        } else {
+            // Normal Chat Flow
+            try {
+                const data = await sendMessage(text);
+                const botMessage = { text: data.reply, sender: 'bot' };
+                setMessages(prev => [...prev, botMessage]);
+            } catch (error) {
+                const errorMessage = { text: "Sorry, something went wrong.", sender: 'bot' };
+                setMessages(prev => [...prev, errorMessage]);
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
-    const handleVoiceResult = async (transcript) => {
-        const userMessage = { text: transcript, sender: 'user' };
-        setMessages(prev => [...prev, userMessage]);
-        setIsLoading(true);
+    const handleSend = async () => {
+        if (!inputText.trim()) return;
+        const text = inputText;
+        setInputText("");
+        await processInput(text);
+    };
 
-        try {
-            const data = await sendVoiceText(transcript);
-            const botMessage = { text: data.reply, sender: 'bot' };
-            setMessages(prev => [...prev, botMessage]);
-        } catch (error) {
-            const errorMessage = { text: "Sorry, I couldn't process that.", sender: 'bot' };
-            setMessages(prev => [...prev, errorMessage]);
-        } finally {
-            setIsLoading(false);
-        }
+    const handleVoiceResult = async (transcript) => {
+        await processInput(transcript);
     };
 
     const handleKeyPress = (e) => {

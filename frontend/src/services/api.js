@@ -9,11 +9,11 @@ export const sendMessage = async (message) => {
       },
       body: JSON.stringify({ message }),
     });
-    
+
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error("Error sending message:", error);
